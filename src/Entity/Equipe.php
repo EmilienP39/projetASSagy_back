@@ -21,6 +21,12 @@ class Equipe
     #[ORM\OneToMany(mappedBy: 'equipe', targetEntity: User::class)]
     private Collection $users;
 
+    #[ORM\Column]
+    private ?bool $isSenior = null;
+
+    #[ORM\Column]
+    private ?float $cotisation_base = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -69,6 +75,30 @@ class Equipe
                 $user->setEquipe(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isIsSenior(): ?bool
+    {
+        return $this->isSenior;
+    }
+
+    public function setIsSenior(bool $isSenior): self
+    {
+        $this->isSenior = $isSenior;
+
+        return $this;
+    }
+
+    public function getCotisationBase(): ?float
+    {
+        return $this->cotisation_base;
+    }
+
+    public function setCotisationBase(float $cotisation_base): self
+    {
+        $this->cotisation_base = $cotisation_base;
 
         return $this;
     }

@@ -45,6 +45,8 @@ class AppFixtures extends Fixture
 
         $equipe = new Equipe();
         $equipe->setNom("U15");
+        $equipe->setIsSenior(false);
+        $equipe->setCotisationBase(70);
         $manager->persist($equipe);
         $user->setEquipe($equipe);
 
