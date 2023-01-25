@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Equipe;
 use App\Entity\User;
+use App\Entity\UserAvantage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -42,12 +43,17 @@ class EquipeController extends AbstractController
         $joueurs = $equipe->getUsers();
 
         foreach ($joueurs as $joueur){
+            $points = 0;
+            $userAvantages = $this->em->getRepository(UserAvantage::class)->findBy(["utilisateur" => $joueur->getId(),"isValide" => true]);
+            foreach ($userAvantages as $userAvantage){
+                $points = $userAvantage->getPoints();
+            }
             $arrayJoueur[] = array(
                 'id' => $joueur->getId(),
                 'nom' => $joueur->getNom(),
                 'prenom' => $joueur->getPrenom(),
                 'username' => $joueur->getUsername(),
-                'point' => $joueur->getPoints()
+                'point' => $points
             );
         }
 

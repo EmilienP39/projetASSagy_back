@@ -24,32 +24,26 @@ class UtilisateurController extends AbstractController
     {
         $user = $this->em->getRepository(User::class)->find($id);
 
-        $userAvantages = $this->em->getRepository(UserAvantage::class)->findBy(["utilisateur" => $user->getId()]);
-        $equipe = $this->em->getRepository(Equipe::class)->find($user->getEquipe()->getId());
-
-        $equipeArray = array(
-            'id' => $equipe->getId(),
-            'nom' => $equipe->getNom(),
+        $userArray = array(
+            'id' => $user->getId(),
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'role' => $user->getRoles(),
         );
 
-        $userAvantageArray = array();
-        foreach ($userAvantages as $userAvantage){
-            $userAvantageArray[] = array(
-                'id' => $userAvantage->getId(),
-                'commentaire' => $userAvantage->getCommentaire(),
-                'isValide' => $userAvantage->isIsValide(),
-                'create' => $userAvantage->getCreated()->format('d-m-Y H:i'),
-                'points' => $userAvantage->getPoints(),
-            );
-        }
+        return new JsonResponse($userArray);
+    }
+
+    #[Route('/username/{username}', name: 'app_utilisateur_one_username')]
+    public function indexUsername($username): JsonResponse
+    {
+        $user = $this->em->getRepository(User::class)->findByUsername($username);
 
         $userArray = array(
             'id' => $user->getId(),
             'nom' => $user->getNom(),
             'prenom' => $user->getPrenom(),
             'role' => $user->getRoles(),
-            'avantage' => $userAvantageArray,
-            'equipe' => $equipeArray
         );
 
         return new JsonResponse($userArray);

@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Avantage;
+use App\Entity\User;
+use App\Entity\UserAvantage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,7 +32,6 @@ class AvantageController extends AbstractController
                 'categorie' => $avantage->getCategorie(),
             );
         }
-
         return new JsonResponse($avantageArray);
     }
 
@@ -107,4 +108,24 @@ class AvantageController extends AbstractController
             return $e;
         }
     }
+    #[Route('/avantage-user/{idUser}', name: 'app_user_avantage',methods: "get")]
+    public function userAvantage($idUser): JsonResponse
+    {
+        $user = $this->em->getRepository(User::class)->find($idUser);
+        $userAvantages = $this->em->getRepository(UserAvantage::class)->findBy(["utilisateur" => $user->getId(),"isValide" => true]);
+        foreach($userAvantages as $userAvantage){
+            $userAvantageArray[] = array(
+                'id' => $userAvantage->getId(),
+                'commentaire' => $userAvantage->getCommentaire(),
+                'points' => $userAvantage->getPoints(),
+                'created' => $userAvantage->getCreated()->format('d/m/Y'),
+                'isValide' => $userAvantage->isIsValide(),
+                'idAvantage' => $userAvantage->getAvantage()->getId()
+            );
+        }
+
+        return new JsonResponse($userAvantageArray);
+    }
+
+
 }
