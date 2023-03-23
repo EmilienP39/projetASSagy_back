@@ -108,24 +108,66 @@ class AvantageController extends AbstractController
             return $e;
         }
     }
-    #[Route('/avantage-user/{idUser}', name: 'app_user_avantage',methods: "get")]
-    public function userAvantage($idUser): JsonResponse
-    {
-        $user = $this->em->getRepository(User::class)->find($idUser);
-        $userAvantages = $this->em->getRepository(UserAvantage::class)->findBy(["utilisateur" => $user->getId(),"isValide" => true]);
-        foreach($userAvantages as $userAvantage){
-            $userAvantageArray[] = array(
-                'id' => $userAvantage->getId(),
-                'commentaire' => $userAvantage->getCommentaire(),
-                'points' => $userAvantage->getPoints(),
-                'created' => $userAvantage->getCreated()->format('d/m/Y'),
-                'isValide' => $userAvantage->isIsValide(),
-                'idAvantage' => $userAvantage->getAvantage()->getId()
-            );
-        }
 
-        return new JsonResponse($userAvantageArray);
+    #[Route('/nb-avantages-non-valide', name: 'app_nb_avantage_pas_valide',methods: "get")]
+    public function getNbAvantagePasValide(): JsonResponse
+    {
+        $userAvantages = $this->em->getRepository(UserAvantage::class)->findBy(['isValide' => false]);
+
+        return new JsonResponse(count($userAvantages));
     }
 
+    #[Route('/avantages-non-valide', name: 'app_avantage_pas_valide',methods: "get")]
+    public function getAvantagePasValide(): JsonResponse
+    {
+        try{
+            $userAvantages = $this->em->getRepository(UserAvantage::class)->findBy(['isValide' => false]);
+            foreach ($userAvantages as $userAvantage) {
+                $user = $userAvantage->getUtilisateur();
 
+                $avantageArray = array(
+                    'id' => $userAvantage->getAvantage()->getId(),
+                    'libelle' => $userAvantage->getAvantage()->getLibelle(),
+                    'points' => $userAvantage->getAvantage()->getPoints(),
+                    'categorie' => $userAvantage->getAvantage()->getCategorie(),
+                );
+                $userArray = array(
+                    'id' => $user->getId(),
+                    'nom' => $user->getNom(),
+                    'prenom' => $user->getPrenom(),
+                    'points' => $user->getPoints(),
+                );
+                $userAvantageArray[] = array(
+                    'id' => $userAvantage->getId(),
+                    'commentaire' => $userAvantage->getCommentaire(),
+                    'points' => $userAvantage->getPoints(),
+                    'created' => $userAvantage->getCreated()->format('Y-m-d\\TH:i:s'),
+                    'isValide' => $userAvantage->isIsValide(),
+                    'avantage' => $avantageArray,
+                    'user' => $userArray,
+                );
+            }
+            return new JsonResponse($userAvantageArray);
+        }catch (\Exception $e) {
+            return new JsonResponse("pas d'avantage à valider");
+        }
+
+    }
+
+    #[Route('/avantages-accept/{id}', name: 'app_avantage_valide',methods: "put")]
+    public function accept($id){
+        try {
+            $userAvantage = $this->em->getRepository(UserAvantage::class)->find($id);
+            $userAvantage->setIsValide(true);
+            $this->em->persist($userAvantage);
+            $this->em->flush();
+
+            return new JsonResponse([
+                'status' => "success",
+                'code' => 200
+            ]);
+        }catch (\Exception $e){
+            return $e;
+        }
+    }
 }
